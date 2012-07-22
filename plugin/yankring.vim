@@ -57,6 +57,12 @@ if !exists('g:yankring_max_element_length')
     let g:yankring_max_element_length = 1048576
 endif
 
+" Specify the maximum length of 1 entry in history(1MB default)
+" if element size larger than this, the element is not add to history
+if !exists('g:yankring_max_history_element_length')
+    let g:yankring_max_element_length = 1048576
+endif
+
 " Warn if truncation occurs
 if !exists('g:yankring_warn_on_truncate')
     let g:yankring_warn_on_truncate = 1
@@ -1907,6 +1913,13 @@ function! s:YRMRUGet( mru_list, position )
 endfunction
 
 function! s:YRMRUAdd( mru_list, element, element_type )
+    if strlen(a:element) < g:yankring_max_history_element_length
+        if g:yankring_warn_on_truncate
+            call s:YRWarningMsg("Yankring not saved this element to history".
+                        \ " because its size too large")
+        endif
+        return 1
+    endif
     " Only add new items if they do not already exist in the MRU.
     " If the item is found, move it to the start of the MRU.
     let found   = -1
